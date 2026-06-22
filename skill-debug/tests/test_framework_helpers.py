@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from skill_debug_tools.common.files import atomic_write_text, ensure_parent, read_yaml, write_json
 from skill_debug_tools.common.markdown import replace_managed_block
 
@@ -30,3 +32,18 @@ After
 
 def test_read_yaml_returns_empty_mapping_for_missing_file(tmp_path: Path) -> None:
     assert read_yaml(tmp_path / "missing.yaml") == {}
+
+
+def test_read_yaml_parses_mapping_content(tmp_path: Path) -> None:
+    target = tmp_path / "config.yaml"
+    atomic_write_text(target, "name: demo\ncount: 2\n")
+
+    assert read_yaml(target) == {"name": "demo", "count": 2}
+
+
+def test_read_yaml_rejects_non_mapping_content(tmp_path: Path) -> None:
+    target = tmp_path / "list.yaml"
+    atomic_write_text(target, "- one\n- two\n")
+
+    with pytest.raises(ValueError, match="YAML document must be a mapping"):
+        read_yaml(target)

@@ -23,7 +23,12 @@ def atomic_write_text(path: Path, content: str) -> None:
 def read_yaml(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if payload is None:
+        return {}
+    if not isinstance(payload, dict):
+        raise ValueError(f"YAML document must be a mapping: {path}")
+    return payload
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
