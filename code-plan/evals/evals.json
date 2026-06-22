@@ -1,0 +1,23 @@
+{
+  "skill_name": "code-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/code-plan 接下来要在一个 Node 服务里修复登录接口偶发返回 500 的问题。真正写代码前，先基于当前项目状态写一份 code-plan-docs 下的 spec，说明这次 bugfix 的编码意图、目标、相关模块现状、会改到哪些模块，以及不在本次范围内的内容。",
+      "expected_output": "在目标项目下生成 code-plan-docs/specs/ 下的 bugfix spec，并包含全部必需章节。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "/code-plan 我要给现有前端设置页加一个导出配置的功能。先不要写代码，先扫描和设置页、配置状态、导出逻辑相关的模块，写一份 spec 到 code-plan-docs/，说明目标、涉及模块和风险。",
+      "expected_output": "生成一个聚焦于现有模块变更的 spec，范围不要漂到整个仓库。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "/code-plan 我准备在 Python 项目里新增一个独立的同步协调模块，统一处理多个外部 API 的重试和回退。先别实现，先写 spec，明确为什么需要新模块、模块边界、依赖方向、接口形态，以及本次不会顺手做哪些重构。",
+      "expected_output": "生成一个包含清晰新模块架构设计陈述的 spec，并说明当前承压模块、建议新增模块路径、改动后的调用链和新增模块职责边界。",
+      "files": []
+    }
+  ]
+}
