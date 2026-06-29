@@ -1,6 +1,6 @@
 ---
 name: "code-analyse"
-description: "Guides source architecture analysis and docs. Invoke only when user runs /code-analyse or explicitly asks to use this skill."
+description: "Use only when the user explicitly invokes /code-analyse for repository or module architecture analysis."
 ---
 
 # Code Analyse
@@ -9,7 +9,8 @@ Use this skill to perform evidence-based source architecture analysis and produc
 
 ## Invocation Rules
 
-- Invoke this skill only when the user explicitly runs `/code-analyse` or clearly asks to use the source analysis skill.
+- Invoke this skill only when the user explicitly runs `/code-analyse`.
+- If the user asks for source analysis without `/code-analyse`, do not invoke this skill automatically.
 - Do not automatically invoke the full analysis workflow for ordinary source questions, bug fixes, small explanations, file-specific changes, or local refactors.
 - If the user asks for a narrow answer after invoking this skill, keep the workflow scoped to that topic while preserving the documentation rules below.
 
@@ -21,13 +22,17 @@ Use this skill to perform evidence-based source architecture analysis and produc
 
 ## Scope Resolution
 
-Before analyzing source files or writing documents, determine and state the analysis scope.
+Before analyzing source files or writing documents, determine and state the analysis scope and the primary document path for the current analysis set.
 
 - If the user does not specify a module, directory, package, or topic, treat the request as a repository-wide analysis.
 - If the user specifies a module, directory, package, feature, workflow, or entrypoint, treat the request as module-scoped analysis.
+- For module-scoped analysis, derive a concise kebab-case `<scope-slug>` from the requested module, directory, package, feature, or workflow name.
 - For module-scoped analysis, inspect the requested scope plus its direct upstream callers, downstream dependencies, public interfaces, configuration, tests, and runtime wiring when they are needed to explain the module accurately.
 - If the requested scope is ambiguous and materially affects the result, ask one concise clarification question before continuing.
-- Record the scope in `code-analyse-docs/project-architecture.md` and every affected topic document using a clear `Analysis scope` section.
+- For repository-wide analysis, record the scope in `<output-dir>/project-architecture.md`.
+- For module-scoped analysis, record the scope in `<output-dir>/scopes/<scope-slug>/overview.md`.
+- Record the scope in every affected topic document within the same analysis set using a clear `Analysis scope` section.
+- Do not update repository-wide conclusions during module-scoped analysis unless the user explicitly asks for cross-scope integration.
 - Do not present module-scoped findings as repository-wide conclusions.
 
 ## Progress Reporting
@@ -40,6 +45,17 @@ During analysis, send concise progress updates to the user. Each substantial pha
 
 Use progress reporting especially after scope resolution, entrypoint discovery, major flow tracing, document creation or update, and final review.
 
+## Execution Artifact Rules
+
+- Every `/code-analyse` invocation must create or update run-tracking documents under `code-analyse-docs/`.
+- Before asking a clarification question, start or refresh the current run record.
+- Use `python3 scripts/code_analyse_run_tracking.py start ...` when a run begins.
+- Use `python3 scripts/code_analyse_run_tracking.py append-event ...` after each major phase.
+- Use `python3 scripts/code_analyse_run_tracking.py sync-future-work ...` before finishing.
+- Use `python3 scripts/code_analyse_run_tracking.py finalize ...` when the run concludes.
+- Keep stable run-tracking entrypoints available through `current-run.md`, `future-work.md`, and historical files under `runs/`.
+- Do not place debug logs in `code-analyse-docs/`.
+
 ## Core Principles
 
 - Read relevant source files before writing or updating any document.
@@ -47,7 +63,8 @@ Use progress reporting especially after scope resolution, entrypoint discovery, 
 - Avoid unsupported assumptions. If evidence is incomplete, state the uncertainty explicitly.
 - Prefer incremental updates when documentation already exists; do not regenerate duplicate documents.
 - Write analysis documents to `code-analyse-docs/` by default unless the user explicitly requests another output directory.
-- Keep `code-analyse-docs/project-architecture.md` as the central overview, navigation map, and reading-order index.
+- For repository-wide analysis, keep `<output-dir>/project-architecture.md` as the central overview, navigation map, and reading-order index.
+- For module-scoped analysis, keep `<output-dir>/scopes/<scope-slug>/overview.md` as the scoped overview, navigation map, and reading-order index.
 
 ## Analysis Workflow
 
@@ -75,11 +92,16 @@ Use progress reporting especially after scope resolution, entrypoint discovery, 
 
 ## Document Outputs
 
-By default, create or update all analysis documents under `code-analyse-docs/`. If the user requests a different output directory, use that directory consistently and apply the same structure.
+By default, create or update all analysis documents under `code-analyse-docs/`. If the user requests a different output directory, substitute that directory for `<output-dir>` below and keep the same structure.
 
-### project-architecture.md
+Use one analysis set per scope:
 
-Create or maintain `code-analyse-docs/project-architecture.md` as the primary entry point. Recommended structure:
+- Repository-wide documents live at the root of `<output-dir>`.
+- Module-scoped documents live under `<output-dir>/scopes/<scope-slug>/`.
+
+### Repository-Wide Primary Document
+
+Create or maintain `<output-dir>/project-architecture.md` as the primary entry point for repository-wide analysis. Recommended structure:
 
 - Analysis scope.
 - Project purpose and scope.
@@ -94,7 +116,7 @@ Create or maintain `code-analyse-docs/project-architecture.md` as the primary en
 - Documentation map with recommended reading order.
 - Next topics to analyze.
 
-The body of `project-architecture.md` must be organized in the same order a reader should consume the documentation. The document must include a directory tree ordered by recommended reading sequence, for example:
+The body of `<output-dir>/project-architecture.md` must be organized in the same order a reader should consume the documentation. The document must include a directory tree ordered by recommended reading sequence, for example:
 
 ```text
 code-analyse-docs/
@@ -104,9 +126,42 @@ code-analyse-docs/
   tool-system.md
 ```
 
+### Module-Scoped Primary Document
+
+Create or maintain `<output-dir>/scopes/<scope-slug>/overview.md` as the primary entry point for module-scoped analysis. Recommended structure:
+
+- Analysis scope.
+- Module, feature, or workflow purpose and scope.
+- Requested scope boundaries and dependency context.
+- Architecture and framework/runtime overview for the scope.
+- Relevant build, run, test, and generated-file overview.
+- Entrypoints, callers, downstream dependencies, and runtime wiring relevant to the scope.
+- Main execution flows.
+- Key modules and ownership boundaries within the scope.
+- State flow and cross-cutting systems relevant to the scope.
+- External dependencies and unresolved assumptions.
+- Documentation map with recommended reading order.
+- Next scoped topics to analyze.
+
+The body of `<output-dir>/scopes/<scope-slug>/overview.md` must be organized in the same order a reader should consume the scoped documentation. The document must include a directory tree ordered by recommended reading sequence, for example:
+
+```text
+code-analyse-docs/
+  scopes/
+    auth-login/
+      overview.md                # Start here for this scope
+      request-flow.md            # Then read scoped topic docs in this order
+      state-lifecycle.md
+      external-dependencies.md
+```
+
 ### Topic Documents
 
-Create dedicated Markdown documents under `code-analyse-docs/` for detailed analysis of modules or mechanisms. Use concise kebab-case names that describe the topic, such as:
+Create dedicated Markdown documents under the current analysis set for detailed analysis of modules or mechanisms.
+
+- For repository-wide analysis, place topic documents under `<output-dir>/`.
+- For module-scoped analysis, place topic documents under `<output-dir>/scopes/<scope-slug>/`.
+- Use concise kebab-case names that describe the topic, such as:
 
 - `query-state-machine.md`
 - `session-memory.md`
@@ -125,7 +180,7 @@ Recommended structure for each topic document:
 - Main control flow or sequence diagram.
 - Interactions with other modules.
 - Edge cases, failure modes, and unresolved assumptions.
-- Links back to `code-analyse-docs/project-architecture.md`, previous and next documents in the reading order, and related topic documents.
+- Links back to the primary overview document for the current analysis set, previous and next documents in the reading order, and related topic documents.
 
 Each topic document must answer these questions with source-backed evidence:
 
@@ -137,42 +192,46 @@ Each topic document must answer these questions with source-backed evidence:
 
 ## Reading Order Rules
 
-- The reading order in `project-architecture.md` is the canonical order for all generated analysis documents.
-- The directory tree, documentation map, body section order, and topic-document previous/next links must stay consistent.
+- The reading order in the primary overview document for the current analysis set is the canonical order for that analysis set.
+- For repository-wide analysis, `<output-dir>/project-architecture.md` is canonical for repository-wide documents.
+- For module-scoped analysis, `<output-dir>/scopes/<scope-slug>/overview.md` is canonical for documents in that scope.
+- The directory tree, documentation map, body section order, and topic-document previous/next links must stay consistent within the same analysis set.
+- Do not treat a module-scoped reading order as the repository-wide reading order.
 - For repository-wide analysis, start with `project-architecture.md`, then arrange topic documents from broad architectural foundations to specific mechanisms and workflows.
 - For module-scoped analysis, start with the scoped overview, then order documents by dependency and execution flow: entrypoint or caller, target module, downstream dependencies, cross-cutting mechanisms, and unresolved external dependencies.
-- When adding, removing, renaming, or reordering topic documents, update every affected reading-order reference.
+- When adding, removing, renaming, or reordering topic documents, update every affected reading-order reference within the same analysis set.
 
 ## Size and Splitting Rules
 
 - Keep every document focused on one overview, module, mechanism, or flow.
 - Split a planned document when it covers multiple independent mechanisms, becomes difficult to scan, or duplicates another topic.
-- Use `code-analyse-docs/project-architecture.md` as the index instead of turning it into a long deep-dive document.
+- Use the primary overview document for the current analysis set (`<output-dir>/project-architecture.md` or `<output-dir>/scopes/<scope-slug>/overview.md`) as the index instead of turning it into a long deep-dive document.
 - Prefer several coherent topic documents over one oversized file.
 
 ## Incremental Update Rules
 
-- Before creating new documentation, check whether `code-analyse-docs/project-architecture.md` and related topic documents already exist.
-- Update existing documents when a topic is already covered and the new analysis refines or corrects it.
+- Before creating new documentation, check whether the primary overview document for the current analysis set already exists (`<output-dir>/project-architecture.md` or `<output-dir>/scopes/<scope-slug>/overview.md`) and whether related topic documents already exist.
+- Update existing documents when a topic is already covered and the new analysis refines or corrects it within the same analysis set.
 - Create a new topic document only when it represents a distinct module, mechanism, flow, or integration point.
-- When adding or changing a topic, update the architecture overview, reading-order tree, cross-document links, and module collaboration notes.
+- When adding or changing a topic, update the matching overview document, reading-order tree, cross-document links, and module collaboration notes within the same analysis set.
+- Do not merge module-scoped findings into repository-wide documents unless the user explicitly asks for cross-scope integration.
 - Preserve useful existing content unless the source evidence shows it is outdated or incorrect.
 
 ## Final Review
 
 Before finishing, review all affected analysis documents and check for:
 
-- Contradictions between overview and topic documents.
+- Contradictions between the primary overview document and topic documents within the same analysis set.
 - Repeated explanations that should be consolidated or cross-linked.
 - Ambiguous terminology or inconsistent module names.
 - Stale links, missing backlinks, and broken reading order.
-- Mismatches between directory tree order, documentation map order, body section order, and previous/next links.
+- Mismatches between directory tree order, documentation map order, body section order, and previous/next links within the same analysis set.
 - Missing `Analysis scope` sections or module-scoped findings presented as repository-wide conclusions.
 - Missing architecture, framework/runtime, execution, data/state, or integration views.
 - Missing relationships between modules, data flow, state ownership, or execution flow.
 - Unresolved assumptions that need user-provided external paths.
 
-After the review, polish `code-analyse-docs/project-architecture.md` so it remains the main entry point, includes the recommended reading-order directory tree, and accurately links every new or updated topic document.
+After the review, polish the primary overview document for the current analysis set so it remains the main entry point, includes the recommended reading-order directory tree, and accurately links every new or updated topic document.
 
 ## Completion Report
 
@@ -185,3 +244,13 @@ When the analysis task is complete, report:
 - Important unresolved assumptions or external paths still needed.
 - Suggested next analysis topics in priority order.
 - Why those next topics are the highest-priority follow-ups.
+<!-- skill-debug:managed:start -->
+## Debug Capability
+
+This skill supports `skill-debug`.
+
+- Debug support: enabled
+- Debug config: `skill-debug/config.yaml`
+- Debug log root: `skill-debug-logs`
+- Manual debug command: `/skill-debug 调试 code-analyse`
+<!-- skill-debug:managed:end -->

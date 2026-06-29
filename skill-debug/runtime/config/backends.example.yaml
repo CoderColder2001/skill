@@ -1,0 +1,41 @@
+default_profile: noop
+profiles:
+  noop:
+    runner: noop
+    provider: noop
+  gpt-mock:
+    runner: openai_api
+    provider: gpt
+    transport: mock
+    base_url: https://mock-gpt.invalid/v1
+    model: gpt-5
+    api_key_env: SKILL_DEBUG_GPT_KEY
+  gpt-live:
+    runner: openai_api
+    provider: gpt
+    transport: http
+    base_url: https://api.openai.com/v1
+    model: gpt-5.5
+    api_key_env: OPENAI_API_KEY
+    reasoning_effort: low
+  deepseek-mock:
+    runner: openai_api
+    provider: deepseek
+    transport: mock
+    base_url: https://mock-deepseek.invalid/v1
+    model: deepseek-chat
+    api_key_env: SKILL_DEBUG_DEEPSEEK_KEY
+  deepseek-live:
+    runner: openai_api
+    provider: deepseek
+    transport: http
+    base_url: https://api.deepseek.com
+    model: deepseek-chat
+    api_key_env: DEEPSEEK_API_KEY
+    reasoning_effort: low
+    thinking:
+      type: enabled
+  codex-thread-mock:
+    runner: codex_thread
+    transport: mock
+    thread_url: mock://codex-thread

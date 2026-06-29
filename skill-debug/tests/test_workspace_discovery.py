@@ -367,6 +367,27 @@ def test_discover_skills_sorts_by_name_then_path(tmp_path: Path) -> None:
     ]
 
 
+def test_discover_skills_skips_framework_skill_debug_roots(tmp_path: Path) -> None:
+    atomic_write_text(
+        tmp_path / "skill-debug" / "SKILL.md",
+        "---\nname: skill-debug\ndescription: framework\n---\n\n# Skill Debug\n",
+    )
+    atomic_write_text(
+        tmp_path / "code-analyse" / "skill-debug" / "SKILL.md",
+        "---\nname: skill-debug\ndescription: legacy framework copy\n---\n\n# Skill Debug\n",
+    )
+    atomic_write_text(
+        tmp_path / "code-analyse" / "SKILL.md",
+        "---\nname: code-analyse\ndescription: analyse\n---\n\n# Code Analyse\n",
+    )
+
+    results = discover_skills(tmp_path)
+
+    assert [(item.name, item.root.relative_to(tmp_path).as_posix()) for item in results] == [
+        ("code-analyse", "code-analyse"),
+    ]
+
+
 @pytest.mark.parametrize(
     ("config_text", "state_overrides", "expected_reason"),
     [

@@ -22,6 +22,13 @@
 
 然后再给出具体编码任务。
 
+如果你已经先通过 `/debug-review` 完成 bug 分析，也可以在确认分析后明确进入修改方案设计，例如：
+
+```text
+/debug-review
+这份分析我认可了。按最新的 current-review.md 进入 code-plan，开始做修改方案设计，但先不要改代码。
+```
+
 ## 示例 1：修 bug
 
 ```text
@@ -49,6 +56,20 @@
 - 会写清改动后的调用链
 - 会说明新模块负责什么、不负责什么
 
+## 示例 3：从 debug-review handoff
+
+```text
+/debug-review
+最新这份 bug 分析我确认了。按 current-review.md 进入 code-plan，开始做修改方案设计，但不要直接进入实现。
+```
+
+预期结果：
+
+- agent 会把 `debug-review-docs/current-review.md` 作为 planning context
+- 会参考最新一份 `debug-review-docs/reviews/*.md`
+- 生成新的 `code-plan-docs/current-spec.md`
+- 不会把这个 handoff 误当成“直接改代码”
+
 ## 生成结果示意
 
 ```text
@@ -68,3 +89,4 @@ your-project/
 - 更细的任务拆解：接 `writing-plans`
 - 真正进入编码并强调测试先行：接 TDD
 - 代码写完后的评审：接 code review 相关 skill
+- 在写 spec 前先做可修订的 bug 分析：先接 `debug-review`

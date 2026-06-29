@@ -1,0 +1,9 @@
+schema_version: 1
+target_skill: code-analyse
+skill_path: SKILL.md
+debug_output_root: skill-debug-logs
+auto_debug_allowed: true
+default_review_mode: async
+default_backend_profile: noop
+manual_debug_command: /skill-debug 调试 code-analyse
+skill_output_root: code-analyse-docs

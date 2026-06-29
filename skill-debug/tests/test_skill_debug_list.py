@@ -31,10 +31,12 @@ def test_skill_debug_list_reports_mixed_states_in_discovery_order(tmp_path: Path
     workspace = tmp_path / "workspace"
     workspace.mkdir()
 
+    framework_root = workspace / "skill-debug"
     zeta_root = workspace / "zeta-skill"
     alpha_root = workspace / "alpha-skill"
     mu_root = workspace / "mu-skill"
 
+    atomic_write_text(framework_root / "SKILL.md", _skill_document("skill-debug", body="# Skill Debug\n"))
     atomic_write_text(zeta_root / "SKILL.md", _skill_document("zeta", body="# Zeta\n"))
     atomic_write_text(alpha_root / "SKILL.md", _skill_document("alpha", body="# Alpha\n"))
     atomic_write_text(mu_root / "SKILL.md", _skill_document("mu", body="# Mu\n"))
@@ -52,6 +54,7 @@ def test_skill_debug_list_reports_mixed_states_in_discovery_order(tmp_path: Path
         f"mu\tbroken\t{mu_root}\tmissing integration files: review-prompt.md",
         f"zeta\tattachable\t{zeta_root}",
     ]
+    assert "skill-debug" not in result.stdout
 
 
 def test_skill_debug_attach_attaches_skill_end_to_end(tmp_path: Path) -> None:

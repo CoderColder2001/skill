@@ -39,6 +39,8 @@ def discover_skills(workspace_root: Path) -> list[SkillRecord]:
         if not name:
             continue
         root = skill_path.parent
+        if _should_skip_skill_root(root=root, skill_name=name):
+            continue
         state, reason = classify_skill(root=root, skill_name=name, skill_path=skill_path)
         records.append(SkillRecord(name=name, root=root, skill_path=skill_path, state=state, reason=reason))
     return sorted(records, key=lambda item: (item.name, str(item.root)))
@@ -138,3 +140,7 @@ def _render_managed_block(skill_name: str) -> str:
             f"- Manual debug command: `/skill-debug 调试 {skill_name}`",
         ]
     )
+
+
+def _should_skip_skill_root(*, root: Path, skill_name: str) -> bool:
+    return skill_name == "skill-debug" and root.name == "skill-debug"

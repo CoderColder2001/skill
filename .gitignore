@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__/
+.pytest_cache/
+*.pyc
+code-review-workspace/
+docs/code-review-rehearsals/demo-target-near-miss/
+docs/code-review-rehearsals/demo-target-test-boundary/

@@ -450,3 +450,37 @@ def test_attach_skill_raises_clear_error_for_ambiguous_skill_name(tmp_path: Path
 
     with pytest.raises(ValueError, match="Ambiguous skill name 'shared-name'"):
         attach_skill(tmp_path, "shared-name")
+
+
+def test_attach_skill_migrates_legacy_target_assets_into_target_local_files(tmp_path: Path) -> None:
+    skill_root = tmp_path / "code-analyse"
+    legacy_target_root = skill_root / "skill-debug" / "targets" / "code-analyse"
+    atomic_write_text(skill_root / "SKILL.md", _skill_document("code-analyse", body="# Code Analyse\n"))
+    atomic_write_text(
+        legacy_target_root / "config.yaml",
+        (
+            "target_skill: code-analyse\n"
+            "skill_output_root: code-analyse-docs\n"
+            "debug_output_root: skill-debug-logs/code-analyse\n"
+            "default_backend_profile: deepseek-mock\n"
+        ),
+    )
+    atomic_write_text(
+        legacy_target_root / "evaluation-guide.md",
+        "# code-analyse Evaluation Guide\n\n- Keep custom checks.\n",
+    )
+    atomic_write_text(
+        legacy_target_root / "review-prompt.md",
+        "# code-analyse Review Prompt Overlay\n\nKeep custom overlay.\n",
+    )
+
+    result = attach_skill(tmp_path, "code-analyse")
+
+    assert result == "repaired"
+    integration_root = skill_root / "skill-debug"
+    config = read_yaml(integration_root / "config.yaml")
+    assert config["skill_output_root"] == "code-analyse-docs"
+    assert config["debug_output_root"] == "skill-debug-logs"
+    assert config["default_backend_profile"] == "deepseek-mock"
+    assert (integration_root / "evaluation-guide.md").read_text(encoding="utf-8") == "# code-analyse Evaluation Guide\n\n- Keep custom checks.\n"
+    assert (integration_root / "review-prompt.md").read_text(encoding="utf-8") == "# code-analyse Review Prompt Overlay\n\nKeep custom overlay.\n"

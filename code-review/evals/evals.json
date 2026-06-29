@@ -1,0 +1,35 @@
+{
+  "skill_name": "code-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/code-review 帮我审查当前未提交改动，重点看新增的 valid 字段有没有在对象初始化、mapper、serializer、fixture 和测试辅助对象里漏改，并把发现写成报告。",
+      "expected_output": "生成一份聚焦字段传播遗漏的报告，明确区分高置信问题和待人工确认项，并在报告中写出启用的检查 pack。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "review 一下这次前端未提交改动，重点看 useEffect/useCallback 依赖、stale closure、表单初始化和 reset/submit 路径有没有漏处理。",
+      "expected_output": "自动进入 diff 审查流程，启用 common-checklist 与 react-hooks，输出一份包含 hook 风险与状态同步问题的报告。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "/code-review 检查一下当前服务端改动，有没有 create/update/retry/job/audit/metrics 这些路径处理不一致的问题，重点看 Node service 链路。",
+      "expected_output": "生成一份启用 common-checklist 与 node-service 的报告，指出服务路径漂移、重试风险或观测性遗漏。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "/code-review 帮我看这次 TS + React 混合改动：新增了一个 status 字段，还改了表单提交逻辑。重点检查类型定义、运行时对象构造、hook 依赖和提交 payload 有没有漏同步。",
+      "expected_output": "生成一份同时启用 common-checklist、typescript-javascript、react-hooks 的报告，并列出跨 pack 的传播遗漏风险。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "/code-review 当前这次改动没有现成测试文件，请你检查变更遗漏，但如果仓库里找不到相关测试资产，不要硬说缺少测试，只需要在报告里说明跳过了测试同步审查。",
+      "expected_output": "报告在没有相关测试资产时跳过测试同步检查，且不会把未补测试直接判定为问题。",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "last_attach_result": "repaired",
+  "managed_block_fingerprint": "583e010988e921082bc832efdc34f21e91412cececd3c429737a4ac997c519d3",
+  "managed_block_marker": "skill-debug",
+  "managed_block_version": 1,
+  "schema_version": 1,
+  "skill_path": "SKILL.md",
+  "target_skill": "code-analyse"
+}

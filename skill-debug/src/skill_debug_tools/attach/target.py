@@ -46,29 +46,61 @@ def _attach_target(*, root: Path, skill_name: str, skill_path: Path, attach_resu
     state_path = integration_root / "injection-state.json"
 
     existing_config = _read_existing_config(config_path)
+    legacy_target_root = integration_root / "targets" / skill_name
+    legacy_config = _read_existing_config(legacy_target_root / "config.yaml")
+    if not existing_config and legacy_config:
+        existing_config = legacy_config
     config = _build_config(skill_name=skill_name, existing_config=existing_config)
     atomic_write_text(config_path, _dump_yaml(config))
 
     if not guide_path.exists():
-        atomic_write_text(
-            guide_path,
-            _render_template(
-                "evaluation-guide.md",
-                skill_name=skill_name,
-                manual_debug_command=_manual_debug_command(skill_name),
-                debug_output_root="skill-debug-logs",
-            ),
-        )
+        legacy_guide = legacy_target_root / "evaluation-guide.md"
+        if legacy_guide.exists():
+            atomic_write_text(guide_path, legacy_guide.read_text(encoding="utf-8"))
+        else:
+            atomic_write_text(
+                guide_path,
+                _render_template(
+                    "evaluation-guide.md",
+                    skill_name=skill_name,
+                    manual_debug_command=_manual_debug_command(skill_name),
+                    debug_output_root="skill-debug-logs",
+                    evaluation_points="\n".join(
+                        [
+                            f"- Confirm the run stayed aligned with `SKILL.md` when using `{_manual_debug_command(skill_name)}`.",
+                            "- Confirm debug artifacts landed under `skill-debug-logs`.",
+                            "- Add skill-specific quality checks here.",
+                        ]
+                    ),
+                ),
+            )
     if not prompt_path.exists():
-        atomic_write_text(
-            prompt_path,
-            _render_template(
-                "review-prompt.md",
-                skill_name=skill_name,
-                manual_debug_command=_manual_debug_command(skill_name),
-                debug_output_root="skill-debug-logs",
-            ),
-        )
+        legacy_prompt = legacy_target_root / "review-prompt.md"
+        if legacy_prompt.exists():
+            atomic_write_text(prompt_path, legacy_prompt.read_text(encoding="utf-8"))
+        else:
+            atomic_write_text(
+                prompt_path,
+                _render_template(
+                    "review-prompt.md",
+                    skill_name=skill_name,
+                    manual_debug_command=_manual_debug_command(skill_name),
+                    debug_output_root="skill-debug-logs",
+                    prompt_body="\n".join(
+                        [
+                            f"Review the latest `{skill_name}` debug run as an execution-quality audit.",
+                            "",
+                            "Focus on:",
+                            "- correctness against `SKILL.md`",
+                            "- clarity and completeness of evidence under `skill-debug-logs`",
+                            "- concrete next steps grounded in the observed run",
+                        ]
+                    ),
+                ),
+            )
+
+    if not state_path.parent.exists():
+        state_path.parent.mkdir(parents=True, exist_ok=True)
 
     managed_body = _render_template(
         "injected-debug-block.md",

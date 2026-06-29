@@ -1,0 +1,23 @@
+{
+  "skill_name": "debug-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/debug-review 登录接口在少数租户下偶发返回 500。先不要改代码，基于当前项目状态审查相关路由、service、repo、fallback 配置和测试线索，把最可能的原因写成 debug-review-docs 下的分析文档。",
+      "expected_output": "生成一份聚焦 bug 表现的分析文档，区分高置信原因与待确认假设，并写入 debug-review-docs/current-review.md 和一份 dated review。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "/debug-review 我已经看过上一版分析了。现在补充一个事实：只有打开 billing fallback 的租户会复现，而且我直接修改了 current-review.md 里关于 repo 层的判断。请基于最新文档和这个新线索修订 bug 分析。",
+      "expected_output": "读取最新分析文档和用户新增反馈，生成新的 dated review，并在修订记录里说明哪些结论被保留、降级或更新。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "/debug-review 这份分析我认可。按最新的 current-review.md 进入 code-plan，开始做修改方案设计，但先不要写代码。",
+      "expected_output": "不直接改代码，而是把 debug-review 的最新 current-review.md 作为 handoff 上下文，进入 code-plan 的 planning 流程。",
+      "files": []
+    }
+  ]
+}

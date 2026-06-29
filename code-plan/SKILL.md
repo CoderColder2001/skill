@@ -1,6 +1,6 @@
 ---
 name: "code-plan"
-description: "Use only when the user explicitly invokes /code-plan before asking to create or modify code in a target project."
+description: "Use only when the user explicitly invokes /code-plan before asking to create or modify code in a target project, or when an active /debug-review sequence is explicitly handed off into 修改方案设计."
 ---
 
 # Code Plan
@@ -9,11 +9,13 @@ Use this skill for pre-coding review on implementation requests. Write a task-sc
 
 ## Invocation Rules
 
-- Invoke this skill only when the user explicitly runs `/code-plan`.
+- Invoke this skill when the user explicitly runs `/code-plan`.
+- Also invoke this skill when the current thread is already inside an active `/debug-review` analysis sequence and the user explicitly agrees to enter 修改方案设计.
 - Do not auto-trigger this skill for ordinary coding requests.
 - After `/code-plan`, keep the thread in this workflow for the current implementation sequence unless the user clearly changes direction.
 - If the user asks only conceptual or exploratory questions after invoking the skill, answer them directly and wait to write the spec until an actual implementation request appears.
 - Do not start production code edits for a covered task until the spec has been written and shown to the user.
+- Do not treat a vague bug conversation as a valid handoff. The debug-review path is valid only when the user clearly approves the move into 修改方案设计.
 
 ## Language Rules
 
@@ -23,11 +25,21 @@ Use this skill for pre-coding review on implementation requests. Write a task-sc
 
 ## When the Spec Is Required
 
-- `/code-plan` has already been invoked.
+- `/code-plan` has already been invoked, or an active `/debug-review` sequence has been explicitly handed off into 修改方案设计.
 - The user is now asking to create, modify, refactor, or repair code.
 - The request is specific enough to identify a target project and implementation direction.
 
 If the request is still ambiguous in a way that changes the project root, task scope, or module boundaries, ask one concise clarification question before writing the spec.
+
+### Handoff Input From `debug-review`
+
+When this skill is entered from `/debug-review`, carry forward the latest bug-analysis context before writing the spec. At minimum, treat the following as upstream planning input when they exist in the target project:
+
+- `debug-review-docs/current-review.md`
+- the latest file under `debug-review-docs/reviews/`
+- the user's latest confirmed corrections or additions from the conversation
+
+Use that material to shape the spec. Do not restart from a blank interpretation if the handoff context is already available.
 
 ## Output Location Rules
 
@@ -63,12 +75,13 @@ Keep the review scoped to the requested code change.
 
 1. Determine that the conversation has moved from discussion into implementation.
 2. Resolve the target project root and the task slug.
-3. Inspect the code, tests, config, and module boundaries relevant to the requested change.
-4. Write the spec to `code-plan-docs/specs/YYYY-MM-DD-<topic>.md`.
-5. Refresh `code-plan-docs/current-spec.md`.
-6. Summarize the spec for the user and ask for confirmation or requested changes.
-7. Wait for the user's response before starting production code edits.
-8. If the implementation scope changes materially later, update the spec before continuing.
+3. If this run came from `/debug-review`, read the latest `debug-review-docs/current-review.md` and the latest dated review before inspecting implementation surfaces.
+4. Inspect the code, tests, config, and module boundaries relevant to the requested change.
+5. Write the spec to `code-plan-docs/specs/YYYY-MM-DD-<topic>.md`.
+6. Refresh `code-plan-docs/current-spec.md`.
+7. Summarize the spec for the user and ask for confirmation or requested changes.
+8. Wait for the user's response before starting production code edits.
+9. If the implementation scope changes materially later, update the spec before continuing.
 
 ## Required Spec Structure
 
@@ -145,6 +158,7 @@ Use `templates/current-spec-template.md` as the default shape for this file.
 - Use `test-driven-development` when actual implementation begins.
 - Use `requesting-code-review` and `receiving-code-review` after code exists and review feedback enters the loop.
 - Use `code-analyse` when the user wants broader repository or module architecture documentation rather than a task-scoped pre-coding spec.
+- Use `debug-review` first when the user still needs a revisable bug-analysis document before deciding on a repair direction. Enter `code-plan` from there only after explicit approval of 修改方案设计.
 
 ## Quality Bar
 
