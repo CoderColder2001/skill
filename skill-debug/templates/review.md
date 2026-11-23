@@ -1,3 +1,0 @@
-# Review
-
-{{ review_summary }}

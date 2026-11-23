@@ -1,5 +1,0 @@
-__pycache__/
-.pytest_cache/
-.venv/
-runtime/review-queue/
-runtime/config/backends.local.yaml
