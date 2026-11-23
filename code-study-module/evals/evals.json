@@ -1,0 +1,115 @@
+{
+  "skill_name": "code-study-module",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "code-study-module payment_router",
+      "expected_output": "直接采用默认路径生成中文源码阅读文档，不为可选动机或默认路径等待确认。",
+      "files": ["evals/fixtures/mini_repo/payment_router.py"],
+      "expectations": [
+        "未要求用户先回答动机或输出路径问题；文档写入项目的 docs/code-study-module/payment_router.md。",
+        "解释 checkout 如何校验金额、选择 provider 并形成返回值，未虚构支付请求或真实网关调用。",
+        "正确区分强制 provider 的优先级、非法 provider 的异常和地区加开关条件下的默认选择。",
+        "文档为中文，源码引用可解析且行号支持附近结论，快照信息符合实际环境。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "code-study-module 帮我调研这个仓库里某个模块，输出源码阅读文档",
+      "expected_output": "只追问缺失的研究对象，不先展开仓库研究。",
+      "files": [],
+      "expectations": [
+        "请求提供具体模块、类、文件或机制名称。",
+        "在得到研究对象前未进行广泛源码搜索，也未创建调研文档。"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "code-study-module action_endpoint，说明 action 如何进入组件和最终响应，重点关注 action_storage 的来源与行为",
+      "expected_output": "用可复现的本地样例验证多写入方、门控、占位替换、输出物化和同 key 覆盖的闭环。",
+      "files": [
+        "evals/fixtures/mini_repo/action_context.py",
+        "evals/fixtures/mini_repo/action_components.py",
+        "evals/fixtures/mini_repo/action_endpoint.py"
+      ],
+      "expectations": [
+        "说明 render_page 为每次调用新建 ActionContext，use_storage 默认关闭，未把 actions 描述为全局缓存。",
+        "覆盖 buttons 的 open/dismiss 与 banner 的 open 写入，说明 banner_enabled 门控。",
+        "说明开关开启时 action 被 action_ref 替换，关闭时组件保留原 action 且 action_storage 为空。",
+        "指出 banner 在 buttons 后构建，开启存储时相同 open key 会覆盖前值，两个 open 引用最终指向 banner 的 action。",
+        "从响应 action_storage 反向定位 materialize、actions 和不同生产路径，说明输出按 key 排序。",
+        "未虚构显式清理回调、流式分块、远程客户端实现或线程安全保证；重要链路有就近源码证据。"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "code-study-module activity_tab，重点理解上游归属、注册生命周期和数据更新",
+      "expected_output": "区分 Session、HostPage、ActivityTab 与共享数据的生命周期，并识别捕获值与惰性读取值。",
+      "files": [
+        "evals/fixtures/mini_repo/page_state.py",
+        "evals/fixtures/mini_repo/activity_tab.py"
+      ],
+      "expectations": [
+        "解释 Session.open_page → HostPage.attach → ActivityTab → render/provider 的上游和输出链。",
+        "明确 tenant 在 attach 时捕获，theme 在每次 render 时读取当前 SessionState。",
+        "说明 Session.update_theme 不需要重建 tab 即可影响后续渲染。",
+        "说明 close/detach 解除 provider 和 page.tab，但不清空 Session.state；未将页面结束等同于会话数据结束。",
+        "上述生命周期和数据来源结论有对应文件与行号支持。"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "code-study-module payment_router，只关心路由优先级，输出到 notes/routing.md，用英文",
+      "expected_output": "遵守明确的路径、语言和范围，用简短的决策说明回答问题。",
+      "files": ["evals/fixtures/mini_repo/payment_router.py"],
+      "expectations": [
+        "直接写入 notes/routing.md，正文使用英文，不再次确认用户已给出的参数。",
+        "先解释输入与优先级，正确覆盖强制值、非法值、CN 加开关和 card fallback。",
+        "未强行扩展成全仓库架构、状态容器或无依据的生命周期章节。"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "code-study-module router",
+      "expected_output": "发现两个语义不同的候选后请求选择，不擅自合并研究对象。",
+      "files": [
+        "evals/fixtures/ambiguous_repo/mobile/router.py",
+        "evals/fixtures/ambiguous_repo/server/router.py"
+      ],
+      "expectations": [
+        "通过有限检索识别 mobile/router.py 和 server/router.py 两个候选。",
+        "询问研究哪一个，在澄清前未写一份把两者合并的调研文档。"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "看看 payment_router.py，解释路由优先级就好，不用写文档",
+      "expected_output": "不因普通代码分析请求而启动显式调用的 skill 工作流。",
+      "files": ["evals/fixtures/mini_repo/payment_router.py"],
+      "expectations": [
+        "直接解释源码问题，没有调用 code-study-module 的文档生成流程。",
+        "未创建 docs/code-study-module 文档，也未追问输出路径或阅读动机。"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "看看本机 code-study-module skill，点评一下",
+      "expected_output": "识别为评审 skill 自身，而非执行模块研究。",
+      "files": [],
+      "expectations": [
+        "评审 skill 的说明和相关资源，不要求用户提供待研究的代码模块名。",
+        "未启动代码模块调研或创建仓库调研文档。"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "code-study-module payment_router，输出到 notes/studies/",
+      "expected_output": "将明确的目录路径转为目录中的模块 Markdown 文件。",
+      "files": ["evals/fixtures/mini_repo/payment_router.py"],
+      "expectations": [
+        "写入 notes/studies/payment_router.md，不将目录当成文件，也不再次追问路径。",
+        "源码链接按更深的文档目录正确解析，引用行号与实际代码一致。"
+      ]
+    }
+  ]
+}
