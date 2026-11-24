@@ -1,9 +1,0 @@
-{
-  "last_attach_result": "repaired",
-  "managed_block_fingerprint": "4819cbb72b66c6a791eb56a6ba881261bde58a7ac9e2a165b03a0c1f6a906ff0",
-  "managed_block_marker": "skill-debug",
-  "managed_block_version": 1,
-  "schema_version": 1,
-  "skill_path": "SKILL.md",
-  "target_skill": "code-study-global"
-}

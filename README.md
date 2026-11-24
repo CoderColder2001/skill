@@ -4,7 +4,7 @@
 
 | 技能 | 用途 | 配套内容 |
 | --- | --- | --- |
-| [code-study-global](code-study-global/SKILL.md) | 持续维护仓库级架构知识库，默认输出到 `docs/code-study-global/` | 运行记录脚本、模板、测试、安装脚本 |
+| [code-study-global](code-study-global/SKILL.md) | 持续维护仓库级架构知识库，按需总结值得学习的设计及其解决的问题，默认输出到 `docs/code-study-global/` | 运行记录脚本、使用参考、模板、测试、安装脚本 |
 | [code-study-module](code-study-module/SKILL.md) | 围绕指定模块或链路生成有源码引用的学习文档 | 状态溯源参考、行为评估用例和源码样例 |
 
 两个技能均保持显式触发：在请求中指定 `code-study-global` 或 `code-study-module`。
@@ -25,6 +25,6 @@ python3 -m venv .venv
 .venv/bin/python -m pytest code-study-global/tests
 ```
 
-`skill-debug` 是独立的可选集成，不随本仓库发布。保留其接入配置和集成测试；未安装 `skill_debug_tools` 时，该集成测试会跳过，全局学习和运行记录功能可以独立使用。
+运行记录脚本只依赖 Python 标准库，无需安装第三方运行依赖；上面的开发环境用于运行测试。
 
 `code-study-module` 的行为评估方法见 [evals/RUNNING.md](code-study-module/evals/RUNNING.md)。校验 JSON 和样例路径不能替代实际行为评估。

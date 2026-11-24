@@ -11,8 +11,9 @@ def test_code_study_global_skill_references_global_output_and_tracking_commands(
     assert "index.md" in document
     assert "current-run.md" in document
     assert "future-work.md" in document
-    assert "python3 scripts/code_study_global_run_tracking.py start" in document
-    assert "Do not place debug logs in `docs/code-study-global/`" in document
+    assert "[run-tracking instructions](references/run-tracking.md)" in document
+    tracking_guide = (ROOT / "references" / "run-tracking.md").read_text(encoding="utf-8")
+    assert 'python3 "<skill-root>/scripts/code_study_global_run_tracking.py" start' in tracking_guide
 
 
 def test_code_study_global_skill_requires_index_links_and_document_boundaries() -> None:
@@ -50,10 +51,3 @@ def test_code_study_global_skill_is_not_module_scoped() -> None:
     assert "This skill has one scope: the whole repository." in document
     assert "Do not create `scopes/<module>/` style module-local study trees." in document
     assert "use `code-study-module` instead" in document
-
-
-def test_code_study_global_skill_debug_configuration_is_renamed() -> None:
-    document = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-    assert "Debug config: `skill-debug/config.yaml`" in document
-    assert "Debug log root: `skill-debug-logs`" in document
-    assert "Manual debug command: `/skill-debug 调试 code-study-global`" in document

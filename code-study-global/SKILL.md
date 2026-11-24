@@ -1,6 +1,6 @@
 ---
 name: "code-study-global"
-description: "Use only when the user explicitly invokes /code-study-global or code-study-global for global repository architecture study. This skill maintains a persistent docs/code-study-global knowledge base for repository-wide modules, dependency boundaries, important execution flows, runtime topology, state/data flow, integration points, and follow-up study topics. Do not use it for ordinary code questions, module-only study, code review, debugging, bug fixes, or implementation work."
+description: "Use only when the user explicitly invokes /code-study-global or code-study-global for global repository architecture study. Maintain a source-backed docs/code-study-global knowledge base covering modules, dependency boundaries, execution flows, runtime topology, state/data flow, integration points, and, when warranted, designs worth learning and the problems they solve. Do not activate for ordinary code questions, module-only study, code review, debugging, implementation, or requests to review/edit this skill itself."
 ---
 
 # Code Study Global
@@ -15,6 +15,7 @@ This skill is for long-running architecture understanding: module maps, runtime 
 - Do not invoke this skill for generic source-reading questions, small explanations, file-specific questions, refactors, bug fixes, debugging, code review, or implementation planning.
 - Do not use this skill for module-only deep dives. If the user wants one specific module analyzed in depth, use `code-study-module` instead.
 - If the user explicitly invokes this skill while also naming a module, treat that module as a global-study focus topic, not as a module-scoped output root.
+- A request to analyze or improve the skill itself is skill maintenance, not a repository-study invocation.
 
 ## Language Rules
 
@@ -33,7 +34,9 @@ This skill has one scope: the whole repository.
 
 ## Intake
 
-At the start of each run, determine the user's intended focus and downstream use. If the user already gave enough information, continue without asking. If materially unclear, ask one concise question before source inspection.
+Resolve the project root from the user's path or `git rev-parse --show-toplevel`, falling back to the current directory. Read applicable repository instructions. Use `rg` and `rg --files` for discovery.
+
+Use the user's focus, downstream use, and preferred depth when supplied. Otherwise, start with a broad architecture map and one representative execution flow. Do not require answers to optional preference questions. If the target repository is ambiguous, inspect available context and ask one targeted question before creating artifacts.
 
 Capture these fields in `current-run.md`:
 
@@ -41,34 +44,17 @@ Capture these fields in `current-run.md`:
 - Downstream need, such as onboarding, design review, future refactor, incident investigation context, or architecture documentation.
 - Preferred depth, such as broad map first, one critical chain first, or update existing docs incrementally.
 
-Before asking a clarification question, start or refresh the run-tracking documents.
+Read existing study documents and run state before starting a new run, because `start` replaces `current-run.md`. Keep source inspection read-only; do not change project source, install dependencies, or run builds, tests, apps, or network operations unless requested or required by repository instructions for this output.
 
 ## Progress Reporting
 
-During analysis, send concise progress updates to the user. Each substantial phase should include:
-
-- `当前进度`: what has been completed and what is being inspected next.
-- `当前发现`: concrete source-backed facts discovered so far.
-- `文档影响`: which global study documents will be created or updated.
-- `建议下一步`: the next useful analysis action and why it matters.
-
-Use progress reporting after intake, repository inventory, entrypoint discovery, major flow tracing, document creation or update, and final review.
+Send concise updates at meaningful milestones: what the source establishes, what remains uncertain, and what will be inspected or documented next. Avoid repeating a fixed status template after every search.
 
 ## Execution Artifact Rules
 
-Every invocation must create or update run-tracking documents under `docs/code-study-global/`.
+Keep lightweight continuity records under the chosen study output root: `current-run.md`, `future-work.md`, and `runs/<run-id>.md`, linked from `index.md`.
 
-- Use `python3 scripts/code_study_global_run_tracking.py start ...` when a run begins.
-- Use `python3 scripts/code_study_global_run_tracking.py append-event ...` after each major phase.
-- Use `python3 scripts/code_study_global_run_tracking.py sync-future-work ...` before finishing.
-- Use `python3 scripts/code_study_global_run_tracking.py finalize ...` when the run concludes.
-- Keep stable run-tracking entrypoints available through `index.md`, `current-run.md`, `future-work.md`, and historical files under `runs/`.
-- Do not place debug logs in `docs/code-study-global/`.
-
-Recommended run ids:
-
-- `csg-YYYYMMDD-HHMMSS-global`
-- `csg-YYYYMMDD-HHMMSS-<focus-slug>`
+Use the bundled helper following [run-tracking instructions](references/run-tracking.md). Resolve its path relative to this `SKILL.md`, and pass the target project's absolute output path; do not assume the target project contains the skill's `scripts/` directory. Record substantive findings and document changes, not every tool call. If Python is unavailable, maintain the same records directly using the bundled `templates/` as a guide.
 
 ## Core Principles
 
@@ -82,8 +68,8 @@ Recommended run ids:
 ## Analysis Workflow
 
 1. Resolve the global study intent, focus topics, downstream need, and output root.
-2. Start run tracking under `docs/code-study-global/`.
-3. Inspect existing `docs/code-study-global/` documents before creating new ones.
+2. Inspect existing documents and run state under the chosen output root before creating or replacing records.
+3. Start run tracking under that output root.
 4. Build or refresh the repository inventory: languages, build files, package layout, configuration, generated artifacts, tests, commands, and runtime entrypoints.
 5. Capture the current source baseline for this study run: project root, branch, HEAD, HEAD time and subject, document update time, source link style, and whether `docs/code-study-global/` is ignored by git.
 6. Identify global architecture views:
@@ -94,14 +80,17 @@ Recommended run ids:
    - State/data flow: state ownership, caches, persistence, events, concurrency, lifecycle, and invalidation.
    - Integration points: external services, protocols, storage, telemetry, auth, feature flags, and unresolved external dependencies.
 7. Trace the user's requested focus topics through source-backed call chains and data movement.
-8. Update the canonical index and relevant map/topic documents.
-9. Update cross-document links, reading order, coverage matrix, source baseline notes, unresolved assumptions, and future-work backlog.
-10. Perform a final consistency review across all affected documents.
-11. Finalize the run-tracking record and report the knowledge-base state.
+8. Identify designs worth learning when the inspected source supports a concrete problem–mechanism explanation; apply the Design Lessons Rules below.
+9. Update the canonical index and relevant map/topic documents, including design lessons only where useful.
+10. Update cross-document links, reading order, coverage matrix, source baseline notes, unresolved assumptions, and future-work backlog.
+11. Perform a final consistency review across all affected documents.
+12. Finalize the run-tracking record and report the knowledge-base state.
+
+Prioritize the user's focus and representative cross-module paths. Stop expanding a supporting branch once its contract, owner, handoff, and effect on the main flow are clear. Mark uninspected areas and unavailable external implementations explicitly; do not recursively study every dependency or claim complete coverage from a directory inventory.
 
 ## Output Structure
 
-By default, create and maintain this structure:
+Use this structure as a navigation guide. Create maps and topics only when inspected source supports useful content; do not create empty documents to fill the tree.
 
 ```text
 docs/code-study-global/
@@ -119,6 +108,7 @@ docs/code-study-global/
     execution-flows.md             # Important request/event/task/render flows
     state-and-data-flow.md         # State ownership, caches, persistence, events
     integration-points.md          # External systems, SDKs, protocols, unresolved deps
+    design-lessons.md              # Optional: cross-module designs worth learning
 ```
 
 Create additional documents only when they represent a distinct global mechanism, stable map, or important cross-module flow.
@@ -134,6 +124,7 @@ Maintain these sections:
 - How to read this knowledge base.
 - Coverage matrix with status for each global architecture area.
 - Repository-wide architecture summary.
+- Links to designs worth learning, if documented, with a one-line summary of the problem each solves.
 - Reading-order tree with relative Markdown links.
 - Topic index grouped by maps, flows, runtime, state/data, and integrations.
 - Recently updated documents and why they changed.
@@ -174,6 +165,7 @@ Each topic document should include:
 - State/data ownership and lifecycle where relevant.
 - Interactions with other modules.
 - Edge cases, failure modes, and unresolved assumptions.
+- Optional `值得学习的设计与解决的问题` section, following the Design Lessons Rules.
 - Reading links back to `index.md`, previous/next documents, and related maps/topics.
 
 Flow narration should make each step understandable without forcing the reader to open every source file:
@@ -183,6 +175,21 @@ Flow narration should make each step understandable without forcing the reader t
 - Method, callback, event, route, or handoff.
 - Produced output, state change, side effect, or next owner.
 - Nearby source reference.
+
+## Design Lessons Rules
+
+While tracing real flows and boundaries, look for designs that teach a reusable way to solve a concrete problem in this project. Include them only when there is enough evidence to explain why they are useful. A familiar pattern name, abstraction, or large class is not sufficient by itself.
+
+Prefer a `值得学习的设计与解决的问题` section in the relevant map or topic. When several lessons span modules or need a shared explanation, use `topics/design-lessons.md` and link to it from `index.md` and the relevant maps/topics. Keep one canonical explanation; the standalone document follows the same snapshot, evidence, and navigation rules as other topics.
+
+For each selected design, explain:
+
+1. **问题与约束**：项目实际面对的场景、限制或复杂度；缺少这层机制时会出现什么问题。区分源码可见事实与反事实推断，不虚构历史故障或作者动机。
+2. **设计与实现**：关键职责、接口、数据结构或协作流程如何解决问题，给出具体类/方法和附近的源码行号链接。
+3. **收益与依据**：说明机制带来的实际效果或由源码推导的收益。没有测试、数据或历史证据时，不声称已验证的性能提升、故障减少或演进效果。
+4. **代价与适用边界**：引入的复杂度、维护成本或限制，什么条件下值得借鉴、什么情况下不适合照搬。
+
+Keep each lesson proportional to the evidence. Do not force a fixed number of lessons, label ordinary code as an elegant design, or add generic pattern tutorials. If no suitable design is found in the inspected scope, omit the section and standalone file; this is not a coverage gap. When revisiting a lesson, recheck its evidence and revise or remove unsupported claims.
 
 ## Cross-Document Link Rules
 
@@ -216,13 +223,13 @@ Each row should include:
 - Source evidence summary.
 - Known gaps or next action.
 
-When a document was last verified against an older HEAD than the current run, either refresh the document or mark the coverage row as `stale` with the newer HEAD noted.
+When HEAD changes, compare the documented source paths and relevant contracts with the previous baseline, including relevant uncommitted changes. Reuse verified conclusions when that evidence is unchanged and record the comparison. If relevant evidence changed or cannot be compared, refresh the document or mark the coverage row as `stale` with the newer HEAD noted. A different HEAD alone does not make every document stale.
 
 ## Document Snapshot Rules
 
 Every `index.md`, map document, and topic document must include a `Document Snapshot` section near the top. This section gives the reader the exact source baseline behind the architecture conclusions, which matters because global architecture documents often outlive the branch or checkout where they were first written.
 
-Use the same fields as `code-study-module`, adapted for global study:
+Record these fields:
 
 - Project root.
 - Branch, or `detached HEAD` / `not a git repo` when appropriate.
@@ -274,6 +281,7 @@ Recommended Markdown shape:
 - Use repository-relative Markdown links from the generated document to source files by default, with line numbers in visible nearby text rather than inside the link target.
 - If the active repository already has a working source-link convention, follow it and record that convention in `Document Snapshot`.
 - After writing, verify linked source paths exist by resolving them relative to the generated Markdown file.
+- Recheck cited symbols and lines against the claim; a valid path or in-range line number alone does not prove the explanation.
 - For important flows, cite each major handoff or state transition.
 - Distinguish verified conclusions from unresolved assumptions.
 - If a dependency, protocol, generated artifact, SDK, or runtime capability depends on another repository, ask for the local path when it materially affects the conclusion.
@@ -281,8 +289,8 @@ Recommended Markdown shape:
 
 ## Incremental Update Rules
 
-- Before writing, inspect the existing `docs/code-study-global/index.md`, relevant maps, relevant topics, `current-run.md`, and `future-work.md`.
-- Compare existing document snapshots with the current run's source baseline. If the source baseline changed, update the affected document snapshot and mark stale documents in the coverage matrix until refreshed.
+- Before writing, inspect the existing `index.md`, relevant maps/topics, `current-run.md`, and `future-work.md` under the chosen output root.
+- Compare existing document snapshots with the current source baseline using the Coverage Matrix Rules. Advance a document's verified baseline only after checking its supporting evidence; do not stamp untouched documents with the current HEAD.
 - Update existing documents when a topic is already covered.
 - Create a new document only for a distinct global mechanism, map, or cross-module flow.
 - Preserve useful existing content unless source evidence shows it is outdated or misleading.
@@ -310,11 +318,12 @@ Before finishing, review all affected study documents and check for:
 - Map/topic boundary confusion.
 - Missing `Document Snapshot` sections.
 - Snapshot fields that are missing branch, HEAD, document update time, source link style, or docs-ignore status.
-- Documents whose snapshot HEAD is older than the current source baseline but are not marked `stale` or refreshed.
+- Documents whose relevant evidence changed or could not be compared, but are not marked `stale` or refreshed.
 - Missing coverage matrix updates.
 - Missing source references near flow or logic explanations.
 - Module-focused claims accidentally presented as whole-repository conclusions.
 - Unresolved assumptions that need user-provided external paths.
+- Design lessons that lack a concrete problem, source-backed mechanism, benefit evidence, or tradeoffs; empty optional sections and duplicated lessons.
 
 ## Completion Report
 
@@ -324,17 +333,7 @@ When the analysis task is complete, report:
 - Documents created or updated.
 - Key source areas inspected.
 - Current global coverage state.
+- Designs worth learning and the problems they solve, if any were documented, with links to their explanations.
 - Known uninspected areas and unresolved assumptions.
 - Suggested next study topics in priority order.
 - Why those next topics are the highest-priority follow-ups.
-
-<!-- skill-debug:managed:start -->
-## Debug Capability
-
-This skill supports `skill-debug`.
-
-- Debug support: enabled
-- Debug config: `skill-debug/config.yaml`
-- Debug log root: `skill-debug-logs`
-- Manual debug command: `/skill-debug 调试 code-study-global`
-<!-- skill-debug:managed:end -->

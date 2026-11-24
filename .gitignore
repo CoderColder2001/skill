@@ -4,4 +4,3 @@ __pycache__/
 .pytest_cache/
 .venv/
 *.egg-info/
-skill-debug-logs/

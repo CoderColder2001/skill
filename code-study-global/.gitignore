@@ -1,6 +1,3 @@
 __pycache__/
 .pytest_cache/
 .venv/
-skill-debug-logs/
-skill-debug/runtime/review-queue/
-skill-debug/runtime/config/backends.local.yaml
